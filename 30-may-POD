@@ -1,0 +1,123 @@
+#Today POD --->>2359. Find Closest Node to Given Two Nodes
+# My Approach ::---->>>>>>>>>>>(DFS)
+class Solution {
+public:
+void dfs(int node, vector<int>& edges, vector<int>& dist) {
+    int d = 0;
+    while (node != -1 && dist[node] == -1) {
+        dist[node] = d++;
+        node = edges[node];
+    }
+}
+
+    int closestMeetingNode(vector<int>& edges, int node1, int node2) {
+       int n = edges.size();
+vector<int> dist1(n, -1), dist2(n, -1);
+
+dfs(node1, edges, dist1);
+dfs(node2, edges, dist2);
+
+
+int mini = INT_MAX;
+int ans = -1;
+for(int i = 0;i<n;i++){
+    if(dist1[i] != -1 && dist2[i] != -1){
+        int maxi = max(dist1[i],dist2[i]);
+        if(maxi < mini){
+            mini = maxi;
+            ans = i;
+        }
+    }
+}
+return ans;
+
+
+    }
+};
+
+#Interview approach explaination  : 
+🔹 Step 1: My Initial (Naive) Idea — Why It Was Wrong
+"Initially, I misunderstood the problem a bit. I thought I could simply check for reachable nodes by comparing indices — like checking if edges[i] >= node1, and then calculating abs(i - node1) as a potential distance.
+But I soon realized this was incorrect, because it treats the graph like a random array, whereas it's actually a directed graph, and nodes can only be reached by following the edges step by step, not by jumping to an index."
+
+🔹 Step 2: Understanding the Graph Structure
+"The moment I understood that each node has at most one outgoing edge, I realized this graph behaves like a set of linked paths or singly-linked lists, and some of them may contain cycles.
+So the correct way to traverse it from a node is by following the edges[node] path until I either reach -1 or revisit a node."
+
+🔹 Step 3: Correct DFS-Based Approach
+"My first correct approach was to use DFS to visit all reachable nodes from node1 and node2.
+I created a helper function that did recursive traversal and filled in the dist[] array with the number of steps from the start node to each reachable node."
+
+✅ DFS Helper Logic (Concept):
+cpp
+Copy
+Edit
+void dfs(int node, vector<int>& edges, vector<int>& dist) {
+    int d = 0;
+    while (node != -1 && dist[node] == -1) {
+        dist[node] = d++;
+        node = edges[node];
+    }
+}
+"After filling in dist1[] and dist2[], I checked every node to find one that is reachable from both. For such nodes, I calculated max(dist1[i], dist2[i]) and tracked the node with the minimum of that value."
+
+🔹 Step 4: Optimized Iterative Approach (Better Than DFS)
+"Then I realized I don’t need DFS at all. Since there's only one edge per node, I can simulate DFS using a simple while loop traversal — no recursion or extra call stack required."
+
+"This makes the solution cleaner and more memory-efficient, while preserving the same time complexity."
+
+✅ Final Code (Iterative Traversal)
+
+class Solution {
+public:
+    int closestMeetingNode(vector<int>& edges, int node1, int node2) {
+        int n = edges.size();
+        vector<int> dist1(n, -1), dist2(n, -1);
+
+        // Traverse from node1
+        int current = node1, distance = 0;
+        while (current != -1 && dist1[current] == -1) {
+            dist1[current] = distance++;
+            current = edges[current];
+        }
+
+        // Traverse from node2
+        current = node2, distance = 0;
+        while (current != -1 && dist2[current] == -1) {
+            dist2[current] = distance++;
+            current = edges[current];
+        }
+
+        // Find the node with the smallest maximum distance
+        int minDist = INT_MAX, answer = -1;
+        for (int i = 0; i < n; i++) {
+            if (dist1[i] != -1 && dist2[i] != -1) {
+                int maxDist = max(dist1[i], dist2[i]);
+                if (maxDist < minDist) {
+                    minDist = maxDist;
+                    answer = i;
+                }
+            }
+        }
+
+        return answer;
+    }
+};
+🔍 Explanation of Code:
+dist1[i] = distance from node1 to node i (or -1 if unreachable)
+
+dist2[i] = distance from node2 to node i
+
+We then compare nodes reachable from both, and select the one with the minimum of the maximum of both distances
+
+🧠 Time and Space Complexity
+Time Complexity: O(n)
+We visit each node once during traversal from node1 and once from node2, and loop through all nodes to find the result.
+
+Space Complexity: O(n)
+Two distance arrays of size n.
+
+✨ Final Summary for Interview
+"To sum up, I started with an incorrect assumption about using index differences. Then I realized the problem is about following graph edges, so I switched to a DFS-based approach.
+Finally, I optimized it by replacing DFS with simple iterative traversal since each node only points to one next node.
+This gave me a clean, optimal solution in O(n) time and space, which handles cycles, disconnected nodes, and satisfies all edge cases."
