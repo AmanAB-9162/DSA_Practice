@@ -1,0 +1,214 @@
+🧱 Step 1: Brute Force Approach
+💡 Idea:
+Try all possible paths from square 1 to square n², simulating dice rolls and snake/ladder jumps.
+
+For each current square:
+
+Try all die rolls: 1 to 6 → go to each possible next square.
+
+If there's a ladder or snake at that square, jump accordingly.
+
+Recursively or iteratively explore all possible paths.
+
+Keep track of the minimum number of dice throws that reach square n².
+
+🧨 Why it's inefficient:
+You're exploring exponentially many paths.
+
+Huge number of possibilities as n increases.
+
+Many states may be revisited, wasting time.
+
+🧮 Time Complexity:
+Worst-case: O(6^k) where k is the number of moves (can be up to n^2).
+
+Practically infeasible for n > 5 or 6.
+
+🧠 Interview Insight:
+Say:
+
+"We can try a brute force DFS to simulate all paths, but this will result in time limit exceeded because of exponential branching and revisiting states."
+
+🚀 Step 2: Optimized with BFS (Shortest Path)
+💡 Key Insight:
+This is essentially a shortest path problem on an unweighted graph.
+Each square is a node, and from each node, you can jump to next 6 squares (after applying snake/ladder logic).
+
+Use Breadth-First Search (BFS):
+
+Start at square 1, with 0 moves.
+
+For each square, explore all next possible 6 moves.
+
+If a destination has a snake/ladder, jump once.
+
+Track visited squares to avoid revisiting.
+
+Stop BFS when reaching square n².
+
+✅ Advantages:
+BFS guarantees shortest path (least dice throws).
+
+Avoids recomputation using a visited set.
+
+Handles snakes/ladders naturally.
+
+🧮 Time Complexity:
+O(n^2) because at most you explore each square once.
+
+Constant work per square (max 6 options).
+
+🧠 Interview Insight:
+Say:
+
+"Since we want the minimum number of moves, it's best to treat the board as a graph and apply BFS from square 1. This ensures we find the shortest path in terms of moves."
+
+🧠 Step 3: Further Optimizations (Edge Cases / Enhancements)
+🔹 Optimization 1: Preprocessing board
+Create a helper function that converts square number → (row, col) coordinates using Boustrophedon logic.
+
+Precompute this map once to speed up lookup during BFS.
+
+🔹 Optimization 2: Use Queue efficiently
+Use a simple queue (collections.deque) to store (square, moves) pairs during BFS.
+
+Maintain a visited array of length n^2 + 1 for O(1) lookup.
+
+🔹 Optimization 3: Early Stopping
+As soon as you reach square n², immediately return the number of moves.
+
+Avoid extra unnecessary BFS levels.
+
+📦 Summary for Interview
+When asked "How will you approach this?"
+Step-by-step Answer:
+
+Brute Force / DFS
+
+"Initially, I can try a DFS that explores all possible paths from square 1 by trying all dice outcomes and following snakes/ladders. But that leads to exponential time and TLE."
+
+Convert to Graph + BFS
+
+"To optimize, I realize this is a shortest path problem where each square is a node, and from each node you can go to the next 6 nodes. I can use BFS to find the minimum number of moves from 1 to n²."
+
+Handle Snakes/Ladders
+
+"During BFS, if I reach a square with a snake or ladder, I jump to its destination only once. I’ll maintain a visited set so I don’t revisit squares."
+
+Optimize further
+
+"I’ll precompute the square → (row, col) mapping based on the zig-zag pattern, use an efficient queue, and stop BFS immediately when I reach the last square."
+
+🔵 Step 1: Brute Force DFS (Not recommended, but for understanding)
+🔧 Code:
+cpp
+Copy
+Edit
+class Solution {
+public:
+    int n;
+    unordered_map<int, int> visited;
+
+    int dfs(vector<vector<int>>& board, int curr) {
+        if (curr == n * n) return 0;
+        if (visited.count(curr)) return visited[curr];
+
+        int minSteps = INT_MAX;
+        for (int i = 1; i <= 6; ++i) {
+            int next = curr + i;
+            if (next > n * n) break;
+
+            auto [row, col] = getCoord(next);
+            if (board[row][col] != -1) {
+                next = board[row][col]; // snake or ladder
+            }
+
+            int result = dfs(board, next);
+            if (result != INT_MAX)
+                minSteps = min(minSteps, 1 + result);
+        }
+
+        return visited[curr] = minSteps;
+    }
+
+    pair<int, int> getCoord(int square) {
+        int row = n - 1 - (square - 1) / n;
+        int col = (square - 1) % n;
+        if ((n - row) % 2 == 0) col = n - 1 - col;
+        return {row, col};
+    }
+
+    int snakesAndLadders(vector<vector<int>>& board) {
+        n = board.size();
+        int ans = dfs(board, 1);
+        return (ans == INT_MAX) ? -1 : ans;
+    }
+};
+❗ Drawback:
+Will likely TLE on large boards.
+
+🟢 Step 2: Optimized BFS (Recommended in Interviews)
+✅ Code:
+cpp
+Copy
+Edit
+class Solution {
+public:
+    int snakesAndLadders(vector<vector<int>>& board) {
+        int n = board.size();
+        vector<bool> visited(n * n + 1, false);
+        queue<pair<int, int>> q; // {square, moves}
+        q.push({1, 0});
+        visited[1] = true;
+
+        while (!q.empty()) {
+            auto [curr, moves] = q.front(); q.pop();
+
+            for (int i = 1; i <= 6; ++i) {
+                int next = curr + i;
+                if (next > n * n) break;
+
+                auto [row, col] = getCoord(next, n);
+                if (board[row][col] != -1) {
+                    next = board[row][col];
+                }
+
+                if (next == n * n) return moves + 1;
+
+                if (!visited[next]) {
+                    visited[next] = true;
+                    q.push({next, moves + 1});
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    pair<int, int> getCoord(int square, int n) {
+        int row = n - 1 - (square - 1) / n;
+        int col = (square - 1) % n;
+        if ((n - row) % 2 == 0) col = n - 1 - col;
+        return {row, col};
+    }
+};
+📌 Explanation of Key Function: getCoord()
+This converts square number to board coordinates:
+
+cpp
+Copy
+Edit
+pair<int, int> getCoord(int square, int n) {
+    int row = n - 1 - (square - 1) / n;
+    int col = (square - 1) % n;
+    if ((n - row) % 2 == 0) col = n - 1 - col;
+    return {row, col};
+}
+Converts linear square to 2D board indices
+
+Handles zig-zag (boustrophedon) pattern
+
+🧠 Interview Tip
+In the interview, you can say:
+
+“I started with brute force DFS, but quickly realized it was too slow. Then I switched to BFS, treating each square as a node. I maintained a visited array and used a helper to convert between square number and board coordinates due to the boustrophedon layout.”
