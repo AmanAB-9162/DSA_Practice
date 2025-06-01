@@ -1,0 +1,126 @@
+#################################################################################################
+🧱 1. Brute-force (Triple nested loops)
+🔍 Idea:
+Try all combinations of (i, j, k) such that i + j + k == n and all ≤ limit.
+Approach :::  “To start simple and ensure I understand the problem well, I used a brute-force approach. I tried all possible combinations where each child gets from 0 to limit candies, and I checked if the sum equals n. This required three nested loops — one for each child.”
+
+👉 “This approach is very intuitive but has a time complexity of O(limit³), which is fine for small values but will time out for n or limit near 1e6.”
+
+
+⏱️ Time Complexity: O(limit³)
+class Solution {
+public:
+    long long distributeCandies(int n, int limit) {
+        long long count = 0;
+        for (int i = 0; i <= limit; i++) {
+            for (int j = 0; j <= limit; j++) {
+                for (int k = 0; k <= limit; k++) {
+                    if (i + j + k == n)
+                        count++;
+                }
+            }
+        }
+        return count;
+    }
+};
+✅ Very slow for large n and limit.
+################################################################################################
+🔻 2. Improved Brute-force (Two Loops + compute third)
+🔍 Idea:
+Loop for i and j, compute k = n - i - j, and check if k is within bounds.
+  Approach :::  “Next, I realized that we don’t need to loop over the third child. Once we fix the candies given to the first two children, we can directly calculate how many candies the third one must get using: k = n - i - j. So I reduced it to two loops and just checked if k is within the valid range 0 to limit.”
+
+👉 “This brings the time complexity down to O(limit²) and is significantly better, but still not scalable to 10⁶ values.”
+
+
+⏱️ Time Complexity: O(limit²)
+
+class Solution {
+public:
+    long long distributeCandies(int n, int limit) {
+        long long count = 0;
+        for (int i = 0; i <= limit; i++) {
+            for (int j = 0; j <= limit; j++) {
+                int k = n - i - j;
+                if (k >= 0 && k <= limit)
+                    count++;
+            }
+        }
+        return count;
+    }
+};
+🟡 Still not good for large limit, but better than 3 loops.
+#################################################################################################
+✅ 3. Optimal (Two Loops Eliminated Using Math)
+🔍 Idea:
+Fix one child’s candy (say i), then count valid values of j such that: 𝑗∈[max(0,𝑛−𝑖−limit),min(limit,𝑛−𝑖)]j∈[max(0,n−i−limit),min(limit,n−i)]
+
+You count how many values of j are valid → that's the number of (j, k) pairs where j + k = n - i.
+Approach :::  “Now I started thinking about how I could eliminate the second loop too. I noticed that for a fixed value of candies given to the first child (say i), I need to count how many valid combinations of (j, k) exist such that j + k = n - i, and both are between 0 and limit.”
+
+“The number of such valid pairs is simply the number of integer values j such that j ∈ [max(0, n - i - limit), min(limit, n - i)].”
+
+👉 “So for each i, I calculate the range of valid j values and count how many values lie in that range — this gives the number of valid (j, k) pairs. Adding them for all i gives the total.”
+
+👉 “This reduces the time complexity to O(min(n, limit)), which is optimal for the constraints.”
+⏱️ Time Complexity: O(min(n, limit))
+
+class Solution {
+public:
+    long long distributeCandies(int n, int limit) {
+        long long res = 0;
+        for (int i = 0; i <= min(limit, n); i++) {
+            int remaining = n - i;
+            if (remaining <= 2 * limit) {
+                int low = max(0, remaining - limit);
+                int high = min(limit, remaining);
+                res += (high - low + 1);
+            }
+        }
+        return res;
+    }
+};
+✅ Efficient even for n = 1e6, used in contests and interviews.
+###################################################################################################
+🔝 4. Bonus: Mathematical Approach (Combinatorics + Inclusion-Exclusion)
+🔍 Idea:
+Count all non-negative integer solutions of x + y + z = n, then subtract ones where x, y, z > limit.
+Approach ::: “If needed, we can solve this using combinatorics. The number of non-negative integer solutions to x + y + z = n is C(n+2, 2) (stars and bars theorem). Then we subtract the invalid cases — i.e., cases where any child gets more than limit candies — using inclusion-exclusion.”
+
+👉 “This method requires careful implementation but computes the answer in constant time with some combinatorics.”
+Used when interview requires mathematical reasoning or multiple queries.
+class Solution {
+public:
+    long long nCk(long long n, long long k) {
+        if (k < 0 || k > n) return 0;
+        long long res = 1;
+        for (long long i = 1; i <= k; i++) {
+            res *= n - i + 1;
+            res /= i;
+        }
+        return res;
+    }
+
+    long long distributeCandies(int n, int limit) {
+        long long total = nCk(n + 2, 2);
+        long long bad = 0;
+
+        for (int i = 0; i < 3; ++i) {
+            int rem = n - (limit + 1);
+            if (rem >= 0) bad += nCk(rem + 2, 2);
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            int rem = n - 2 * (limit + 1);
+            if (rem >= 0) bad -= nCk(rem + 2, 2);
+        }
+
+        int rem = n - 3 * (limit + 1);
+        if (rem >= 0) bad += nCk(rem + 2, 2);
+
+        return total - bad;
+    }
+};
+🗣️ What to Say in Interviews:
+"I started with a brute-force approach using three loops, which checks every combination. Then I optimized it by fixing two variables and computing the third. To go further, I reduced it to a single loop with math — fixing one variable and using ranges for the remaining two — which makes it efficient even for large inputs. For even more performance or theoretical questions, I can use combinatorics with inclusion-exclusion to directly compute the result without iteration."
+
