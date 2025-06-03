@@ -1,0 +1,175 @@
+Problem Summary (Start with this in the interview)
+You are given some boxes. Each box may be:
+
+Open or closed (status array).
+
+Contain candies.
+
+Contain keys to other boxes.
+
+Contain other boxes.
+
+You are given a set of initialBoxes. The goal is to maximize the total number of candies collected by opening the boxes following the constraints above.
+##################################################################################################################################################################################################################
+🧠 Brute Force Idea (Not optimal — but show you thought from basics)
+🔹 Thought process:
+Try to open all boxes in all combinations using recursion.
+
+Try using all boxes recursively if you can access them and have their key.
+
+But this leads to repeated visits and exponential growth.
+code :
+class Solution {
+public:
+    int maxCandies(vector<int>& status, vector<int>& candies,
+                   vector<vector<int>>& keys,
+                   vector<vector<int>>& containedBoxes,
+                   vector<int>& initialBoxes) {
+        
+        int n = status.size();
+        vector<bool> hasKey(n, false);
+        vector<bool> hasBox(n, false);
+        vector<bool> used(n, false);
+
+        for (int box : initialBoxes) {
+            hasBox[box] = true;
+        }
+
+        int totalCandies = 0;
+        bool changed = true;
+
+        while (changed) {
+            changed = false;
+
+            for (int i = 0; i < n; ++i) {
+                // If we have the box and it is open (or we have key) and not yet used
+                if (hasBox[i] && (status[i] == 1 || hasKey[i]) && !used[i]) {
+                    used[i] = true;
+                    totalCandies += candies[i];
+                    changed = true;
+
+                    // Add keys found inside this box
+                    for (int key : keys[i]) {
+                        hasKey[key] = true;
+                    }
+
+                    // Add boxes contained in this box
+                    for (int b : containedBoxes[i]) {
+                        hasBox[b] = true;
+                    }
+                }
+            }
+        }
+
+        return totalCandies;
+    }
+};
+
+❌ Time Complexity: O(2^N) (too slow — exponential)
+✅ What to tell:
+“Initially, I thought of recursively trying every combination of boxes and keys, but I realized that approach would repeat many states and be too slow for large input sizes.”
+################################################################################################################################################################################################################
+✅ Optimized Approach – BFS / Simulation
+This is the correct approach used in the provided code.
+
+🔹 Core Idea:
+Use BFS to simulate the process of collecting boxes, opening them (if we have the key or it's open), and repeating this while collecting candies and tracking visited boxes.
+
+🔹 Why BFS?
+Because it's like a level-wise expansion: we keep collecting boxes, keys, and exploring more boxes.
+
+Avoids revisiting and redundant work.
+
+✅ Steps in the Optimized Code:
+Maintain:
+
+can_open[i] → if we have a key to box i or it's already open.
+
+has_box[i] → if we possess the box.
+
+used[i] → if we've already processed this box.
+
+Initialize a queue with all initialBoxes that we can open.
+
+While the queue is not empty:
+
+Open the box.
+
+Add its candies to total.
+
+Store the keys it gives.
+
+Store the boxes it contains.
+
+If any newly found box can be opened now → push to queue.
+
+✅ Code: (Final Optimized Solution)
+class Solution {
+public:
+    int maxCandies(vector<int>& status, vector<int>& candies,
+                   vector<vector<int>>& keys,
+                   vector<vector<int>>& containedBoxes,
+                   vector<int>& initialBoxes) {
+        int n = status.size();
+        vector<bool> can_open(n), has_box(n), used(n);
+
+        for (int i = 0; i < n; ++i)
+            can_open[i] = (status[i] == 1);
+
+        queue<int> q;
+        int ans = 0;
+
+        for (int box : initialBoxes) {
+            has_box[box] = true;
+            if (can_open[box]) {
+                q.push(box);
+                used[box] = true;
+                ans += candies[box];
+            }
+        }
+
+        while (!q.empty()) {
+            int curr = q.front(); q.pop();
+
+            for (int key : keys[curr]) {
+                can_open[key] = true;
+                if (has_box[key] && !used[key]) {
+                    q.push(key);
+                    used[key] = true;
+                    ans += candies[key];
+                }
+            }
+
+            for (int box : containedBoxes[curr]) {
+                has_box[box] = true;
+                if (can_open[box] && !used[box]) {
+                    q.push(box);
+                    used[box] = true;
+                    ans += candies[box];
+                }
+            }
+        }
+
+        return ans;
+    }
+};
+⏱ Time and Space Complexity
+Type	Complexity
+Time	O(N + M) where N = number of boxes, M = total keys + contained boxes
+Space	O(N + M) for queue and visited trackers
+
+🎯 What to Say in an Interview:
+I started by thinking about a brute-force recursive approach where I try to open all combinations of boxes if I have them and the key. But I quickly realized this would lead to an exponential number of states due to the nested box and key structure.
+
+So I moved to a more optimal BFS-based simulation. I used three tracking arrays:
+
+One to check if I can open a box (can_open),
+
+One to track if I have possession of a box (has_box),
+
+One to ensure I don’t reprocess the same box (used).
+
+I enqueue all initial boxes that are open. Then, for each box I open, I collect candies, add newly acquired keys, and explore the boxes it contains. If any of those can now be opened, I enqueue them too. This process continues until I can’t open any more boxes.
+
+This ensures we only visit each box once and avoid revisiting states, giving us a clean and efficient O(N + M) solution.
+
