@@ -1,0 +1,129 @@
+🧠 Problem Statement: Leetcode 135 - Candy
+You are given an array ratings representing the rating of each child. You must give candies to children such that:
+
+Each child gets at least 1 candy.
+
+Children with a higher rating than their neighbors get more candies.
+
+Return the minimum number of candies needed.
+
+✅ Optimal Answer to Tell Interviewer
+I approached this problem by first implementing a simple greedy solution and then optimized it to O(1) space.
+The core idea is to recognize that we need to track increasing and decreasing sequences of ratings to assign candies fairly.
+
+I implemented two solutions:
+
+Two-pass greedy with O(n) space using two arrays
+
+Optimized O(1) space solution using peak/valley tracking in one pass
+
+This guarantees minimum candies by ensuring each peak gets the correct count and overlapping regions are handled well.
+#################################################################################################################################################################################################################
+🔍 Approach 1: Brute-force (TLE for large inputs)
+Increase candy until constraints are met.
+
+Very slow and inefficient.
+
+int candy(vector<int>& ratings) {
+    int n = ratings.size();
+    vector<int> candies(n, 1);
+    bool updated = true;
+
+    while (updated) {
+        updated = false;
+        for (int i = 0; i < n; ++i) {
+            if (i > 0 && ratings[i] > ratings[i-1] && candies[i] <= candies[i-1]) {
+                candies[i] = candies[i-1] + 1;
+                updated = true;
+            }
+            if (i < n - 1 && ratings[i] > ratings[i+1] && candies[i] <= candies[i+1]) {
+                candies[i] = candies[i+1] + 1;
+                updated = true;
+            }
+        }
+    }
+
+    return accumulate(candies.begin(), candies.end(), 0);
+}
+🕒 Time: O(n^2)
+
+🧠 Space: O(n)
+###################################################################################################################################################################################################################
+✅ Approach 2: Two-pass Greedy (Efficient & Clear)
+First pass (left to right): handle increasing trend.
+
+Second pass (right to left): handle decreasing trend.
+
+int candy(vector<int>& ratings) {
+    int n = ratings.size();
+    vector<int> left(n, 1), right(n, 1);
+
+    for (int i = 1; i < n; ++i)
+        if (ratings[i] > ratings[i - 1])
+            left[i] = left[i - 1] + 1;
+
+    for (int i = n - 2; i >= 0; --i)
+        if (ratings[i] > ratings[i + 1])
+            right[i] = right[i + 1] + 1;
+
+    int total = 0;
+    for (int i = 0; i < n; ++i)
+        total += max(left[i], right[i]);
+
+    return total;
+}
+🕒 Time: O(n)
+
+🧠 Space: O(n)
+
+✅ Easy to explain and very readable.
+##################################################################################################################################################################################################################
+🔥 Approach 3: One-pass, O(1) space (Optimized)
+Use peak and valley tracking logic.
+Track increasing and decreasing sequences and correct overcounting.
+
+int candy(vector<int>& ratings) {
+    int n = ratings.size();
+    int i = 1, total = n;
+
+    while (i < n) {
+        if (ratings[i] == ratings[i - 1]) {
+            i++;
+            continue;
+        }
+
+        int peak = 0;
+        while (i < n && ratings[i] > ratings[i - 1]) {
+            peak++;
+            total += peak;
+            i++;
+        }
+
+        if (i == n) return total;
+
+        int valley = 0;
+        while (i < n && ratings[i] < ratings[i - 1]) {
+            valley++;
+            total += valley;
+            i++;
+        }
+
+        // Remove the overlapping peak-valley candy count
+        total -= min(peak, valley);
+    }
+
+    return total;
+}
+🕒 Time: O(n)
+
+🧠 Space: O(1)
+
+⚡ Most optimized and suitable for large input
+
+🗣️ What to Tell the Interviewer (Summary)
+I started by understanding the problem with a brute-force approach but quickly realized it's inefficient.
+Then I moved to a greedy two-pass solution using arrays from left-to-right and right-to-left, which gave correct results in O(n) time and space.
+
+Finally, I optimized it to a single-pass with O(1) space by tracking increasing (peak) and decreasing (valley) sequences and adjusting for double counting.
+
+This approach is both space-efficient and performs well under constraints.
