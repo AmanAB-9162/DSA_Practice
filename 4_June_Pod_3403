@@ -1,0 +1,87 @@
+✅ Approach 1: Optimized Greedy + Max Char Filter (Your Solution)
+💬 What to Say:
+“I filtered substrings starting with the maximum character in the word, since only those can potentially be part of the lexicographically largest string. From each such index, I try a substring of max valid length n - numFriends + 1.”
+
+✅ Code:
+class Solution {
+public:
+    string answerString(string word, int numFriends) {
+        int n = word.size();
+        if (numFriends == 1) return word;
+
+        char maxChar = *max_element(word.begin(), word.end());
+        string result = "";
+
+        for (int i = 0; i < n; i++) {
+            if (word[i] == maxChar) {
+                int len = min(n - i, n - numFriends + 1);
+                if (len <= 0) continue;
+                string substr = word.substr(i, len);
+                if (substr > result) result = substr;
+            }
+        }
+        return result;
+    }
+};
+🧠 Time Complexity: O(n)
+###################################################################################################################################################################################################################
+✅ Approach 2: Brute-Force Backtracking
+💬 What to Say:
+“Initially I explored a recursive backtracking approach that tries all valid splits into numFriends non-empty parts, collects all parts into the box, and then finds the max string.”
+
+✅ Code:
+class Solution {
+public:
+    void dfs(string &word, int idx, int partsLeft, vector<string> &current, vector<string> &box) {
+        if (partsLeft == 1) {
+            current.push_back(word.substr(idx));
+            for (auto &s : current) box.push_back(s);
+            current.pop_back();
+            return;
+        }
+
+        for (int i = idx + 1; i <= word.size() - partsLeft + 1; i++) {
+            current.push_back(word.substr(idx, i - idx));
+            dfs(word, i, partsLeft - 1, current, box);
+            current.pop_back();
+        }
+    }
+
+    string answerString(string word, int numFriends) {
+        vector<string> box;
+        vector<string> current;
+        dfs(word, 0, numFriends, current, box);
+        return *max_element(box.begin(), box.end());
+    }
+};
+🧠 Time Complexity: Exponential (O(C(n-1, k-1)))
+####################################################################################################################################################################################################################
+✅ Approach 3: Greedy Sliding Window
+💬 What to Say:
+“I also tried a more direct greedy approach where I slide a window of size n - numFriends + 1 over the word and record the lexicographically largest substring.”
+
+✅ Code:
+class Solution {
+public:
+    string answerString(string word, int numFriends) {
+        int n = word.length();
+        if (numFriends == 1) return word;
+
+        int windowSize = n - numFriends + 1;
+        string result = "";
+
+        for (int i = 0; i <= n - windowSize; i++) {
+            string sub = word.substr(i, windowSize);
+            result = max(result, sub);
+        }
+
+        return result;
+    }
+};
+🧠 Time Complexity: O(n)
+####################################################################################################################################################################################################################
+✅ How to Present the Flow in an Interview:
+1. Started with brute-force DFS → tries all valid partitions, slow but complete.
+2. Realized we only need substrings from valid parts → used a greedy sliding window to scan fixed-length substrings.
+3. Further optimized by filtering on max-char prefixes → only high-potential substrings considered.
+4. The final version is fast (linear) and passes all constraints.
