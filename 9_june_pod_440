@@ -1,0 +1,30 @@
+class Solution {
+public:
+#define ll long long
+
+ll counter(ll curr,ll next,int n){
+    ll count = 0;
+    while(curr <= n){
+        count += min((ll)n+1,next)-curr;
+        curr *= 10;
+        next *= 10;
+    }
+    return count;
+}
+    int findKthNumber(int n, int k) {
+         int curr = 1;
+         k--;
+         while(k >0){
+            ll count = counter(curr,curr+1,n);
+             if(count <= k){
+                curr += 1;
+                k = k- count;
+             }
+             else{
+                curr *= 10;
+                k = k-1;
+             }
+         }
+    return curr;
+    }
+};
