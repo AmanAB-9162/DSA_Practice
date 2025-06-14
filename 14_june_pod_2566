@@ -1,0 +1,50 @@
+class Solution 
+{
+public:
+    int minMaxDifference(int num) 
+    {
+        // Step 1: Convert number to string
+        string n = to_string(num);
+
+        // Step 2: Maximize by replacing first non-'9' digit with '9'
+        char toReplaceMax = 0;
+        for (char c : n) 
+        {
+            if (c != '9') 
+            {
+                toReplaceMax = c;
+                break;
+            }
+        }
+        string maxStr = n;
+        if (toReplaceMax) 
+        {
+            for (char& c : maxStr) 
+            {
+                if (c == toReplaceMax) c = '9';
+            }
+        }
+
+        // Step 3: Minimize by replacing first non-'0' digit with '0'
+        char toReplaceMin = 0;
+        for (char c : n) 
+        {
+            if (c != '0') 
+            {
+                toReplaceMin = c;
+                break;
+            }
+        }
+        string minStr = n;
+        if (toReplaceMin) 
+        {
+            for (char& c : minStr) 
+            {
+                if (c == toReplaceMin) c = '0';
+            }
+        }
+
+        // Step 4: Return difference
+        return stoi(maxStr) - stoi(minStr);
+    }
+};
