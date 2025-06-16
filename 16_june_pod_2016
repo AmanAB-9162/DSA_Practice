@@ -1,0 +1,45 @@
+✅ Version 1: Brute Force Approach
+class Solution {
+public:
+    int maximumDifference(vector<int>& nums) {
+        int n = nums.size();
+        int diff = -1;
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (nums[i] < nums[j]) {
+                    diff = max(diff, nums[j] - nums[i]);
+                }
+            }
+        }  
+        return diff;
+    }
+};
+⏱ Time Complexity:
+O(n²) — because of the nested loops (i and j).
+
+Each element is compared with every other element that comes after it.
+
+🧠 Space Complexity:
+O(1) — no additional space used, just scalar variables.
+
+✅ Version 2: Optimized Approach
+class Solution {
+public:
+    int maximumDifference(vector<int>& nums) {
+        int n = nums.size();
+        int ans = -1, premin = nums[0];
+        for (int i = 1; i < n; ++i) {
+            if (nums[i] > premin) {
+                ans = max(ans, nums[i] - premin);
+            } else {
+                premin = nums[i];
+            }
+        }
+        return ans;
+    }
+};
+⏱ Time Complexity:
+O(n) — only a single traversal of the array.
+
+🧠 Space Complexity:
+O(1) — constant space usage.
