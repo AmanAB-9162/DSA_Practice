@@ -1,0 +1,19 @@
+class Solution {
+public:
+    vector<string> divideString(string s, int k, char fill) {
+        vector<string> res;  
+        int n = s.size();
+        int curr = 0;  
+        while (curr < n) {
+            res.push_back(s.substr(curr, k));
+            curr += k;
+        }
+        if (!res.empty()) {
+            int lastLength = res.back().length();
+            if (lastLength < k) {
+                res.back() += string(k - lastLength, fill);
+            }
+        }
+        return res;
+    }
+};
