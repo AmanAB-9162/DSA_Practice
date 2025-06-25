@@ -1,0 +1,58 @@
+// class Solution {
+// public:
+//     long long kthSmallestProduct(vector<int>& nums1, vector<int>& nums2, long long k) {
+//         int n = nums1.size();
+//         int m = nums2.size();
+//         vector<long long>ans;
+//         for(int i = 0;i<n;i++){
+//             for(int j = 0;j<m;j++){
+//                 long long num = 1LL * nums1[i] * nums2[j];
+//                 ans.push_back(num);
+//             }
+//         }
+//         sort(ans.begin(),ans.end());
+     
+//         return ans[k-1];
+
+//     }
+// };
+
+
+class Solution {
+public:
+    long long kthSmallestProduct(vector<int>& nums1, vector<int>& nums2, long long k) {
+        long long left = -1e10, right = 1e10;
+        while (left < right) {
+            long long mid = left + (right - left) / 2;
+            if (countProducts(nums1, nums2, mid) < k) left = mid + 1;
+            else right = mid;
+        }
+        return left;
+    }
+
+    long long countProducts(vector<int>& nums1, vector<int>& nums2, long long target) {
+        long long count = 0;
+        for (int num1 : nums1) {
+            if (num1 == 0) {
+                if (target >= 0) count += nums2.size();
+                continue;
+            }
+
+            int low = 0, high = nums2.size();
+            while (low < high) {
+                int mid = (low + high) / 2;
+                long long prod = 1LL * num1 * nums2[mid];
+                if (prod <= target) {
+                    if (num1 > 0) low = mid + 1;
+                    else high = mid;
+                } else {
+                    if (num1 > 0) high = mid;
+                    else low = mid + 1;
+                }
+            }
+
+            count += (num1 > 0) ? low : (nums2.size() - low);
+        }
+        return count;
+    }
+};
