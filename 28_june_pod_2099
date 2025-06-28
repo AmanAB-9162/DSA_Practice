@@ -1,0 +1,31 @@
+class Solution {
+public:
+    vector<int> maxSubsequence(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<pair<int, int>> numWithIndex;
+        
+        // Pair each number with its index
+        for (int i = 0; i < n; ++i) {
+            numWithIndex.push_back({nums[i], i});
+        }
+        
+        // Sort by value descending
+        sort(numWithIndex.begin(), numWithIndex.end(), greater<>());
+        
+        // Get top k elements
+        vector<pair<int, int>> topK(numWithIndex.begin(), numWithIndex.begin() + k);
+        
+        // Sort top k elements by original index to preserve order
+        sort(topK.begin(), topK.end(), [](auto &a, auto &b) {
+            return a.second < b.second;
+        });
+        
+        // Extract values
+        vector<int> result;
+        for (auto &p : topK) {
+            result.push_back(p.first);
+        }
+        
+        return result;
+    }
+};
