@@ -1,0 +1,15 @@
+class Solution {
+public:
+    char kthCharacter(int k) {
+    //  string str = "a";
+    //  while(str.length() < k){
+    //     int size = str.length();
+    //     for(int i = 0;i<size;i++){
+    //         char next = 'a' + ((str[i] - 'a' + 1)%26);
+    //         str += next;
+    //     }
+    //  }
+    //  return str[k-1];
+    return 'a' + __builtin_popcount(k - 1);
+    }
+};
